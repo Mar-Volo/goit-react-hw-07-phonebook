@@ -1,45 +1,47 @@
+import React from 'react';
 import { Form, Label, Field, FormSubmit } from './Form.styled';
 import shortid from 'shortid';
 import { toast } from 'react-toastify';
 import { useDispatch, useSelector } from 'react-redux';
-import { addContact } from '../../redux/contactsSlice';
+import { addContact } from '../../redux/operations';
 
 export const ContactForm = () => {
   const dispatch = useDispatch();
-  const contacts = useSelector(state => state.contacts);
+  const { items } = useSelector(state => state.contacts);
 
   const contactId = () => {
     return shortid.generate();
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSubmit = (e, actions) => {
+  e.preventDefault();
 
-    const name = e.target.elements.name.value;
-    const number = e.target.elements.number.value;
+  const name = e.target.elements.name.value;
+  const number = e.target.elements.number.value;
 
-    const isContact = contacts.some(
-      ({ name: contactName }) => contactName.toLowerCase() === name.toLowerCase()
-    );
+  const findContactName = items.find(
+    ({ name: contactName }) => contactName.toLowerCase() === name.toLowerCase()
+  );
 
-    if (isContact) {
-      toast.error(`${name} is already in your contacts`, {
-        position: toast.POSITION.TOP_CENTER,
-      });
-      return;
-    }
-
-    const newContact = {
-      id: contactId(),
-      name,
-      number,
-    };
-
-    dispatch(addContact(newContact));
-
+  if (findContactName) {
     e.target.reset();
+    return toast.error(`${findContactName.name} already in your contacts!`, {
+      position: 'top-center',
+      autoClose: 2000,
+      theme: 'colored',
+    });
+  }
+
+  const newContact = {
+    id: contactId(),
+    name,
+    number,
   };
 
+  dispatch(addContact(newContact));
+  e.target.reset();
+};
+  
   return (
     <Form autoComplete="off" onSubmit={handleSubmit}>
       <Label>
@@ -64,4 +66,3 @@ export const ContactForm = () => {
     </Form>
   );
 };
-
